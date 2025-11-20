@@ -3,7 +3,15 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 
         Title="Блокнот" Height="450" Width="800">
-    <Grid>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="Файл">
+                <MenuItem Header="Открыть" Command="{Binding OpenCommand}" />
+                <MenuItem Header="Сохранить" Command="{Binding SaveCommand}" />
+            </MenuItem>
+        </Menu>
 
-    </Grid>
+        <TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
+                 AcceptsReturn="True" FontSize="16" />
+    </DockPanel>
 </Window>

@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using NotepadApp.ViewModels;
+
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -11,14 +13,12 @@ using System.Windows.Shapes;
 
 namespace NotepadApp
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        public MainWindow(MainViewModel vm)
         {
             InitializeComponent();
+            DataContext = vm;
         }
     }
 }
