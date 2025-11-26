@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace NotepadApp.Interfaces
+﻿namespace NotepadApp.Interfaces
 {
+    public enum Result { Success, Cancelled, Error }
+
     public interface IFileService
     {
-        string? OpenFile();
-        void SaveFile(string path, string content);
+        Result TryOpen(out string? text, out string? path);
+        Result TrySave(string text, ref string? path);
     }
-
 }
 

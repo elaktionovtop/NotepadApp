@@ -1,15 +1,8 @@
 ﻿using NotepadApp.ViewModels;
 
-using System.Text;
+using System.ComponentModel;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace NotepadApp
 {
@@ -19,6 +12,26 @@ namespace NotepadApp
         {
             InitializeComponent();
             DataContext = vm;
+
+            Closing += (s, e) =>
+                e.Cancel = vm.FileVM.ShouldCancel();
+
+            text.Loaded += (s, e) => text.Focus();
+            vm.FileVM.RequestFocus = () => text.Focus();
+            vm.EditVM.HighlightTextRequested += (start, length) =>
+            {
+                text.Focus();
+                text.Select(start, length);
+            };
         }
+
+        private void Delete_CanExecute
+            (object sender, CanExecuteRoutedEventArgs e) =>
+            e.CanExecute = text != null && text.SelectionLength > 0;
+
+        private void Delete_Executed
+            (object sender, ExecutedRoutedEventArgs e) =>
+            text.Text = text.Text.Remove
+                (text.SelectionStart, text.SelectionLength);
     }
 }

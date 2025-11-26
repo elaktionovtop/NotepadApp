@@ -1,28 +1,62 @@
 ﻿using Microsoft.Win32;
-
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
+using NotepadApp.Interfaces;
+
 namespace NotepadApp.Services
 {
-    class FileService : Interfaces.IFileService
+    public class FileService : IFileService
     {
-        public string? OpenFile()
+        public Result TryOpen(out string? text, out string? path)
         {
-            var dialog = new OpenFileDialog();
-            dialog.Filter = "Text files|*.txt|All files|*.*";
+            (text, path) = (null, null);
 
-            if(dialog.ShowDialog() == true)
-                return File.ReadAllText(dialog.FileName);
+            var dialog = new OpenFileDialog
+            {
+                Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*"
+            };
 
-            return null;
+            if(dialog.ShowDialog() != true)
+                return Result.Cancelled;
+
+            try
+            {
+                text = File.ReadAllText(dialog.FileName, Encoding.UTF8);
+                path = dialog.FileName;
+                return Result.Success;
+            }
+            catch
+            {
+                return Result.Error;
+            }
         }
 
-        public void SaveFile(string path, string content)
+        public Result TrySave(string text, ref string? path)
         {
-            File.WriteAllText(path, content);
+            // если путь ещё не был задан — SaveAs
+            if(string.IsNullOrEmpty(path))
+            {
+                var dialog = new SaveFileDialog
+                {
+                    Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*"
+                };
+
+                if(dialog.ShowDialog() != true)
+                    return Result.Cancelled;
+
+                path = dialog.FileName;
+            }
+
+            try
+            {
+                File.WriteAllText(path!, text, Encoding.UTF8);
+                return Result.Success;
+            }
+            catch
+            {
+                return Result.Error;
+            }
         }
     }
 }

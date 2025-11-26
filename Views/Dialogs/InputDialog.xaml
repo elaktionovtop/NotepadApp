@@ -1,0 +1,13 @@
+﻿<Window x:Class="NotepadApp.Views.Dialogs.InputDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding Title}" Height="150" Width="300" WindowStartupLocation="CenterOwner">
+    <StackPanel Margin="10">
+        <TextBlock Text="{Binding Message}" Margin="0,0,0,5"/>
+        <TextBox Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Content="OK" Width="60" Margin="0,0,5,0" IsDefault="True" Click="Ok_Click"/>
+            <Button Content="Cancel" Width="60" IsCancel="True"/>
+        </StackPanel>
+    </StackPanel>
+</Window>

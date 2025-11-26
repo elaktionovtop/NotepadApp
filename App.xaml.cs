@@ -1,11 +1,11 @@
-﻿using System;
-using System.Windows;
-
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 using NotepadApp.Interfaces;
+using NotepadApp.Models;
 using NotepadApp.Services;
 using NotepadApp.ViewModels;
+
+using System.Windows;
 
 namespace NotepadApp
 {
@@ -17,18 +17,19 @@ namespace NotepadApp
         {
             var services = new ServiceCollection();
 
-            // --- Регистрируем сервисы ---
-            services.AddSingleton<IFileService, FileService>();
+            services.AddSingleton<DocumentModel>();
 
-            // --- Регистрируем ViewModels ---
             services.AddSingleton<MainViewModel>();
+            services.AddSingleton<FileViewModel>();
+            services.AddSingleton<EditViewModel>();
 
-            // --- Регистрируем окна ---
             services.AddSingleton<MainWindow>();
+
+            services.AddSingleton<IFileService, FileService>();
+            services.AddSingleton<IDialogService, DialogService>();
 
             Services = services.BuildServiceProvider();
 
-            // запускаем главное окно
             var window = Services.GetRequiredService<MainWindow>();
             window.Show();
         }

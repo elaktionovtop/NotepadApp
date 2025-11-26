@@ -1,11 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using NotepadApp.Interfaces;
+using NotepadApp.Models;
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Text;
 
 using static System.Net.Mime.MediaTypeNames;
 
@@ -13,29 +16,37 @@ namespace NotepadApp.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
-        private readonly IFileService _fileService;
+        public DocumentModel Document { get; }
 
-        [ObservableProperty]
-        private string text;
+        public FileViewModel FileVM { get; }
+        public EditViewModel EditVM { get; }
 
-        public MainViewModel(IFileService fileService)
+        public MainViewModel(DocumentModel document,
+                             FileViewModel fileVm,
+                             EditViewModel editVm)
         {
-            _fileService = fileService;
+            (Document, FileVM, EditVM) = (document, fileVm, editVm);
+            Document.PropertyChanged += Document_PropertyChanged;
         }
 
-        [RelayCommand]
-        private void Open()
+        private void Document_PropertyChanged
+            (object? sender, PropertyChangedEventArgs e)
         {
-            var content = _fileService.OpenFile();
-            if(content != null)
-                Text = content;
-        }
-
-        [RelayCommand]
-        private void Save()
-        {
-            // для простоты — фиксированный путь
-            _fileService.SaveFile("saved.txt", Text ?? "");
+            switch(e.PropertyName)
+            {
+                case nameof(Document.Text) :
+                    Document.IsModified = true;
+                    break;
+                case nameof(Document.FilePath):
+                    Document.Title = 
+                        string.IsNullOrEmpty(Document.FilePath) ?
+                        DocumentModel.DefaultTitle :
+                        Path.GetFileName(Document.FilePath);
+                    break;
+                case nameof(Document.IsModified):
+                    FileVM.SaveCommand.NotifyCanExecuteChanged();
+                    break;
+            }
         }
     }
 }
