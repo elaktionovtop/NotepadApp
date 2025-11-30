@@ -5,6 +5,8 @@ using NotepadApp.Interfaces;
 using NotepadApp.Models;
 using NotepadApp.Services;
 
+using System.Windows.Input;
+
 namespace NotepadApp.ViewModels
 {
     public partial class FileViewModel : ObservableObject
@@ -19,7 +21,19 @@ namespace NotepadApp.ViewModels
             (_doc, _fileService, _dialogService) = (document, fileService, dialogService);
         
         public Action? RequestFocus { get; set; }
-                
+
+        //[ObservableProperty]
+        //private string _text = string.Empty;
+        
+        //[ObservableProperty]
+        //private string? _filePath;
+
+        //[ObservableProperty]
+        //private bool _isModified;
+
+        //[ObservableProperty]
+        //private string _title = DefaultTitle;
+
         //partial void OnTextChanged(string? oldValue, string newValue) =>
         //    IsModified = true;
 

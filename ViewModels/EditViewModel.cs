@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 
 using NotepadApp.Models;
 using NotepadApp.Services;
+using NotepadApp.Views.Dialogs;
 
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,13 @@ public partial class EditViewModel : ObservableObject
     [ObservableProperty]
     private int _searchStart;
 
+    [ObservableProperty]
+    private int _caretIndex;         // текущая позиция каретки (SelectionStart)
+
+    [ObservableProperty]
+    private int _selectionLength;    // длина выделения (SelectionLength)
+
+    public event Action<int, int>? HighlightTextRequested;
 
     public EditViewModel(DocumentModel document, IDialogService dialogService)
     {
@@ -29,11 +37,16 @@ public partial class EditViewModel : ObservableObject
         _dialogService = dialogService;
     }
 
-    public event Action<int, int>? HighlightTextRequested;
-
     // int startIndex, int length
     private void OnHighlightText(int start, int length) =>
         HighlightTextRequested?.Invoke(start, length);
+
+    // вызывается из View при смене выделения/каретки
+    public void UpdateCaret(int caretIndex, int selectionLength)
+    {
+        CaretIndex = caretIndex;
+        SelectionLength = selectionLength;
+    }
 
     [RelayCommand]
     private void Find()
@@ -112,14 +125,32 @@ public partial class EditViewModel : ObservableObject
     [RelayCommand]
     private void GoToLineDialog()
     {
-        string? input = _dialogService.Input("Перейти", "Номер строки:");
+        int current = GetCurrentLine();
+        int max = _document.Text.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None).Length;
+
+        string? input = _dialogService.InputLine("Перейти", "Номер строки:", current, max);
         if(int.TryParse(input, out int lineNumber) && lineNumber > 0)
         {
             GoToLine(lineNumber);
         }
     }
 
-    [RelayCommand]
+    private int GetCurrentLine()
+    {
+        int pos = CaretIndex;
+        string[] lines = _document.Text.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+
+        int sum = 0;
+        for(int i = 0; i < lines.Length; i++)
+        {
+            int len = lines[i].Length + 1;
+            if(pos < sum + len)
+                return i + 1;
+            sum += len;
+        }
+        return lines.Length;
+    }
+
     private void GoToLine(int lineNumber)
     {
         if(lineNumber <= 0) return;
@@ -130,7 +161,8 @@ public partial class EditViewModel : ObservableObject
 
         int charIndex = 0;
         for(int i = 0; i < lineNumber - 1; i++)
-            charIndex += lines[i].Length + 1; // +1 для \n или \r\n
+            charIndex += lines[i].Length + Environment.NewLine.Length; 
+        // +1/2 для \n или \r\n
 
         SearchStart = charIndex; // чтобы поиск после этого работал правильно
 
@@ -141,13 +173,28 @@ public partial class EditViewModel : ObservableObject
     private void InsertDateTime()
     {
         string now = DateTime.Now.ToString("g"); // формат "dd.MM.yyyy HH:mm" или локальный
-        int insertPos = SearchStart; // текущая позиция для вставки
 
-        _document.Text = _document.Text.Insert(insertPos, now);
+        int insertPos = CaretIndex;
+        if(SelectionLength > 0)
+        {
+            _document.Text = _document.Text.Remove(insertPos, SelectionLength)
+                                           .Insert(insertPos, now);
+        }
+        else
+        {
+            _document.Text = _document.Text.Insert(insertPos, now);
+        }
+
         _document.IsModified = true;
 
-        SearchStart = insertPos + now.Length;
+        // новая позиция каретки — сразу после вставки
+        int newPos = insertPos + now.Length;
+        CaretIndex = newPos;
+        SelectionLength = 0;
 
-        OnHighlightText(insertPos, now.Length); // выделяем вставленное
+        // чтобы поиск/FindNext работал правильно — поставим SearchStart после вставки
+        SearchStart = newPos;
+
+        OnHighlightText(insertPos, now.Length);
     }
 }

@@ -33,6 +33,12 @@ namespace NotepadApp.Services
             return dlg.ShowDialog() == true ? dlg.InputText : null;
         }
 
+        public string? InputLine(string title, string message, int currentLine, int maxLine)
+        {
+            var dlg = new InputLineDialog(title, message, currentLine, maxLine) { Owner = Application.Current.MainWindow };
+            return dlg.ShowDialog() == true ? dlg.InputText : null;
+        }
+
         public (string find, string? replace) InputReplace(string title, string findLabel, string replaceLabel)
         {
             var dlg = new ReplaceDialog(title, findLabel, replaceLabel) { Owner = Application.Current.MainWindow };

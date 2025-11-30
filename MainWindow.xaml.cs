@@ -16,8 +16,18 @@ namespace NotepadApp
             Closing += (s, e) =>
                 e.Cancel = vm.FileVM.ShouldCancel();
 
-            text.Loaded += (s, e) => text.Focus();
-            vm.FileVM.RequestFocus = () => text.Focus();
+            text.SelectionChanged += (s, e) =>
+            {
+                // Обновляем VM о позиции каретки и длине выделения
+                vm.EditVM.UpdateCaret(text.SelectionStart, text.SelectionLength);
+            };
+
+            // инициализация начального состояния
+            text.Loaded += (s, e) =>
+            {
+                text.Focus();
+                vm.EditVM.UpdateCaret(text.SelectionStart, text.SelectionLength);
+            }; vm.FileVM.RequestFocus = () => text.Focus();
             vm.EditVM.HighlightTextRequested += (start, length) =>
             {
                 text.Focus();
